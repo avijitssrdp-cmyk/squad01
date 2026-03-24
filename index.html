@@ -136,21 +136,32 @@
         }
 
         async function handleLogin() {
-            const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            const btn = document.getElementById('login-btn');
-            if(!id || !pass) return alert("Enter credentials");
-            btn.innerText = "Verifying...";
-            try {
-                const resp = await fetch(`${scriptURL}?action=login&loginId=${id}&password=${pass}`);
-                const res = await resp.json();
-                if(res.status === "success") {
-                    localStorage.setItem('squadup_profile', JSON.stringify(res.user));
-                    location.reload();
-                } else { alert(res.msg); btn.innerText = "Login"; }
-            } catch(e) { alert("Connection Error. Check deployment URL and Access settings."); btn.innerText = "Login"; }
+    const id = document.getElementById('login-id').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
+    const btn = document.getElementById('login-btn');
+    
+    if(!id || !pass) return alert("Please enter credentials.");
+    btn.innerText = "Verifying...";
+    
+    // Using a GET request format to bypass CORS blocks
+    const finalURL = `${scriptURL}?action=login&loginId=${encodeURIComponent(id)}&password=${encodeURIComponent(pass)}`;
+    
+    try {
+        const response = await fetch(finalURL);
+        const res = await response.json();
+        
+        if(res.status === "success") {
+            localStorage.setItem('squadup_profile', JSON.stringify(res.user));
+            location.reload();
+        } else {
+            alert("Error: " + res.msg);
+            btn.innerText = "Login";
         }
-
+    } catch(e) { 
+        alert("Connection Error. 1. Ensure you used 'New Deployment' URL. 2. Check if script is set to 'Anyone'.");
+        btn.innerText = "Login";
+    }
+}
         async function handleRegister() {
             const profile = { 
                 action: 'register',
